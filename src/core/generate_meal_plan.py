@@ -80,6 +80,7 @@ def choose_recipes():
 
 
 def get_random_recipes():
+    randomize_results.clear()
     parse_meals_from_mealie_api()
     while randomize_results == []:
         choose_recipes()
