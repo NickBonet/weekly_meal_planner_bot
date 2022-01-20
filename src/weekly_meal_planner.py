@@ -22,12 +22,13 @@ async def send_new_meal_plan_to_discord():
 async def send_today_meal_plan_to_discord():
     async with aiohttp.ClientSession() as session:
         todays_meal = get_todays_meal()
+        message = ("<@&" + os.environ.get('WEBHOOK_ROLE_ID') + ">\n**Reminder: Meal for today**\n" +
+                   "(remember to get out any frozen ingredients!)\n" +
+                   todays_meal['name'] + "\n")
+        if todays_meal['slug'] is not None:
+            message = (message + "URL: " + os.environ.get('MEALIE_API') + "/recipe/" + todays_meal['slug'])
         webhook = Webhook.from_url(os.environ.get('WEBHOOK_URL'), adapter=AsyncWebhookAdapter(session))
-        await webhook.send("<@&" + os.environ.get('WEBHOOK_ROLE_ID') + ">\n**Reminder: Meal for today**\n" +
-                           "(remember to get out any frozen ingredients!)\n" +
-                           todays_meal['name'] + "\n" +
-                           "URL: " + os.environ.get('MEALIE_API') + "/recipe/" + todays_meal['slug'],
-                           username='Meal Planner')
+        await webhook.send(message, username='Meal Planner')
     print('Meal data for today sent to Discord!')
 
 print('Starting meal planner webhook bot!')
