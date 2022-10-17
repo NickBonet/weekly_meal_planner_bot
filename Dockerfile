@@ -7,4 +7,4 @@ RUN pip3 install -r requirements.txt
 
 COPY . .
 
-CMD [ "python3", "./src/weekly_meal_planner.py" ]
+CMD [ "python3", "-u", "./src/weekly_meal_planner.py" ]
