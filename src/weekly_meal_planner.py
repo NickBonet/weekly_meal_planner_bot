@@ -3,13 +3,16 @@ import os
 import asyncio
 import aiohttp
 import aiocron
+import discord
 from core.generate_meal_plan import get_random_recipes, get_todays_meal
 
 
 @aiocron.crontab("0 09 * * 5")
 async def send_new_meal_plan_to_discord():
     async with aiohttp.ClientSession() as session:
-        webhook = Webhook.from_url(os.environ.get("WEBHOOK_URL"), session=session)
+        webhook = discord.Webhook.from_url(
+            os.environ.get("WEBHOOK_URL"), session=session
+        )
         await webhook.send(
             "<@&"
             + os.environ.get("WEBHOOK_ROLE_ID")
@@ -25,7 +28,7 @@ async def send_new_meal_plan_to_discord():
     print("Meal plan for the week sent to Discord!")
 
 
-@aiocron.crontab('0 08 * * *')
+@aiocron.crontab("0 08 * * *")
 async def send_today_meal_plan_to_discord():
     async with aiohttp.ClientSession() as session:
         todays_meal = get_todays_meal()
@@ -45,7 +48,9 @@ async def send_today_meal_plan_to_discord():
                 + "/recipe/"
                 + todays_meal["slug"]
             )
-        webhook = Webhook.from_url(os.environ.get("WEBHOOK_URL"), session=session)
+        webhook = discord.Webhook.from_url(
+            os.environ.get("WEBHOOK_URL"), session=session
+        )
         await webhook.send(message, username="Meal Planner")
     print("Meal data for today sent to Discord!")
 
