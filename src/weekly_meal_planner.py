@@ -6,6 +6,7 @@ meal plan reminders from Mealie.
 import asyncio
 import logging
 import os
+import pytz
 
 import aiocron
 import aiohttp
@@ -20,7 +21,7 @@ logging.basicConfig(
 load_dotenv()
 
 
-@aiocron.crontab("0 08 * * *", tz=os.environ.get("TZ"))
+@aiocron.crontab("16 14 * * *", tz=pytz.timezone(os.environ("TZ")))
 async def send_today_meal_plan_to_discord():
     async with aiohttp.ClientSession() as session:
         todays_meal = get_todays_meal()
