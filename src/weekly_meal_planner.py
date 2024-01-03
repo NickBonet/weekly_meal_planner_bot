@@ -1,59 +1,61 @@
-"""Basic Discord bot for requesting meal plans and meal plan reminders from Mealie."""
-import os
+"""
+Basic Discord bot for requesting meal plans and
+meal plan reminders from Mealie.
+"""
+
 import asyncio
-import aiohttp
+import logging
+import os
+
 import aiocron
+import aiohttp
 import discord
-from core.generate_meal_plan import get_random_recipes, get_todays_meal
+from dotenv import load_dotenv
+
+from core.generate_meal_plan import get_todays_meal
+
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
+)
+load_dotenv()
 
 
-@aiocron.crontab("0 09 * * 5")
-async def send_new_meal_plan_to_discord():
-    async with aiohttp.ClientSession() as session:
-        webhook = discord.Webhook.from_url(
-            os.environ.get("WEBHOOK_URL"), session=session
-        )
-        await webhook.send(
-            "<@&"
-            + os.environ.get("WEBHOOK_ROLE_ID")
-            + ">\n**Recipes for next week:**\n"
-            + "\n".join(
-                [
-                    str(elem.name + " (URL: " + elem.recipe_url + ")")
-                    for elem in get_random_recipes()
-                ]
-            ),
-            username="Meal Planner",
-        )
-    print("Meal plan for the week sent to Discord!")
-
-
-@aiocron.crontab("0 08 * * *")
+@aiocron.crontab("0 08 * * *", tz=os.environ.get("TZ"))
 async def send_today_meal_plan_to_discord():
     async with aiohttp.ClientSession() as session:
         todays_meal = get_todays_meal()
+
+        if not todays_meal:
+            logging.warning("No meal data for today!")
+            return
+
+        name = ""
+        slug = ""
+
+        if todays_meal[0]["title"]:
+            name = todays_meal[0]["title"]
+        elif todays_meal[0]["recipe"] is not None:
+            name = todays_meal[0]["recipe"]["name"]
+            slug = todays_meal[0]["recipe"]["slug"]
+
         message = (
             "<@&"
             + os.environ.get("WEBHOOK_ROLE_ID")
             + ">\n**Reminder: Meal for today**\n"
             + "(remember to get out any frozen ingredients!)\n"
-            + todays_meal["name"]
+            + name
             + "\n"
         )
-        if todays_meal["slug"] is not None:
+        if slug:
             message = (
-                message
-                + "URL: "
-                + os.environ.get("MEALIE_API")
-                + "/recipe/"
-                + todays_meal["slug"]
+                message + "URL: " + os.environ.get("MEALIE_API") + "/g/home/r/" + slug
             )
         webhook = discord.Webhook.from_url(
             os.environ.get("WEBHOOK_URL"), session=session
         )
         await webhook.send(message, username="Meal Planner")
-    print("Meal data for today sent to Discord!")
+    logging.info("Meal data for today sent to Discord!")
 
 
-print("Starting meal planner webhook bot!")
+logging.info("Starting meal planner webhook bot!")
 asyncio.get_event_loop().run_forever()

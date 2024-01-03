@@ -2,3 +2,4 @@ discord.py
 aiocron
 requests
 aiohttp
+python-dotenv
