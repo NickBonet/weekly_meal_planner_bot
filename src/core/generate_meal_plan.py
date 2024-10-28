@@ -5,7 +5,7 @@ from requests.structures import CaseInsensitiveDict
 
 
 def get_todays_meal():
-    url = os.environ.get("MEALIE_API") + "/api/groups/mealplans/today"
+    url = os.environ.get("MEALIE_API") + "/api/households/mealplans/today"
 
     headers = CaseInsensitiveDict()
     headers["Accept"] = "application/json"
