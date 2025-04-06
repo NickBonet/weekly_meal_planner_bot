@@ -18,16 +18,39 @@ from core.generate_meal_plan import get_todays_meal
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
 )
+
 load_dotenv()
 
 
-@aiocron.crontab("0 08 * * *", tz=pytz.timezone(os.environ["TZ"]))
+async def initialize_webhook():
+    async with aiohttp.ClientSession() as session:
+        webhook = discord.Webhook.from_url(
+            os.environ.get("WEBHOOK_URL"), session=session
+        )
+
+        await webhook.send(
+            "Meal planner bot started!",
+            username="Meal Planner",
+        )
+
+
+@aiocron.crontab("00 09,11 * * *", tz=pytz.timezone(os.environ["TZ"]))
 async def send_today_meal_plan_to_discord():
     async with aiohttp.ClientSession() as session:
         todays_meal = get_todays_meal()
+        webhook = discord.Webhook.from_url(
+            os.environ.get("WEBHOOK_URL"), session=session
+        )
 
         if not todays_meal:
             logging.warning("No meal data for today!")
+            message = (
+                "<@&"
+                + os.environ.get("WEBHOOK_ROLE_ID")
+                + ">\n**No meal data found for today!**\n"
+            )
+
+            await webhook.send(message, username="Meal Planner")
             return
 
         name = ""
@@ -51,12 +74,19 @@ async def send_today_meal_plan_to_discord():
             message = (
                 message + "URL: " + os.environ.get("MEALIE_API") + "/g/home/r/" + slug
             )
-        webhook = discord.Webhook.from_url(
-            os.environ.get("WEBHOOK_URL"), session=session
-        )
+
         await webhook.send(message, username="Meal Planner")
     logging.info("Meal data for today sent to Discord!")
 
 
-logging.info("Starting meal planner webhook bot!")
-asyncio.get_event_loop().run_forever()
+if __name__ == "__main__":
+    logging.info("Starting meal planner webhook bot!")
+
+    loop = asyncio.get_event_loop()
+    loop.create_task(initialize_webhook())
+
+    # Run the event loop forever
+    try:
+        loop.run_forever()
+    except KeyboardInterrupt:
+        logging.info("Shutting down meal planner bot.")
