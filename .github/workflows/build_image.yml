@@ -30,3 +30,4 @@ jobs:
           context: .
           push: true
           tags: ghcr.io/nickbonet/weekly_meal_planner_bot:latest, ghcr.io/nickbonet/weekly_meal_planner_bot:${{ steps.latest_sha.outputs.sha }}
+      - uses: gautamkrishnar/keepalive-workflow@v2
