@@ -29,4 +29,4 @@ jobs:
         with:
           context: .
           push: true
-          tags: ghcr.io/weekly_meal_planner_bot:latest, ghcr.io/weekly_meal_planner_bot:${{ steps.latest_sha.outputs.sha }}
+          tags: ghcr.io/nickbonet/weekly_meal_planner_bot:latest, ghcr.io/nickbonet/weekly_meal_planner_bot:${{ steps.latest_sha.outputs.sha }}
