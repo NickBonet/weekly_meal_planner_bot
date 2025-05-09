@@ -34,3 +34,14 @@ jobs:
           context: .
           push: true
           tags: ghcr.io/nickbonet/weekly_meal_planner_bot:latest, ghcr.io/nickbonet/weekly_meal_planner_bot:${{ steps.latest_sha.outputs.sha }}
+
+      - name: Trivy Scan
+        uses: aquasecurity/trivy-action@v0.30.0
+        with:
+          image-ref: ghcr.io/nickbonet/weekly_meal_planner_bot:latest
+          format: "table"
+          exit-code: "1"
+          severity: "HIGH,CRITICAL"
+          ignore-unfixed: true
+          vuln-type: "os,library"
+          ignore-policy: ".trivyignore"
