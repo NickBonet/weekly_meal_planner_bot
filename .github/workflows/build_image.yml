@@ -44,3 +44,14 @@ jobs:
           severity: "HIGH,CRITICAL"
           ignore-unfixed: true
           vuln-type: "os,library"
+
+  discord_notification:
+    needs: [build]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send message to Discord webhook
+        uses: tsickert/discord-webhook@v6.0.0
+        with:
+          webhook-url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          content: ${{ needs.build.result == 'success' && 'Meal planner bot Docker image built successfully! :rocket:' || 'Meal planner bot Docker image build failed. :sos:' }}
