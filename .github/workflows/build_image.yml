@@ -36,7 +36,7 @@ jobs:
           tags: ghcr.io/nickbonet/weekly_meal_planner_bot:latest, ghcr.io/nickbonet/weekly_meal_planner_bot:${{ steps.latest_sha.outputs.sha }}
 
       - name: Trivy Scan
-        uses: aquasecurity/trivy-action@v0.30.0
+        uses: aquasecurity/trivy-action@0.30.0
         with:
           image-ref: ghcr.io/nickbonet/weekly_meal_planner_bot:latest
           format: "table"
