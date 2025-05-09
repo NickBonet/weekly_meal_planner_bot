@@ -34,3 +34,24 @@ jobs:
           context: .
           push: true
           tags: ghcr.io/nickbonet/weekly_meal_planner_bot:latest, ghcr.io/nickbonet/weekly_meal_planner_bot:${{ steps.latest_sha.outputs.sha }}
+
+      - name: Trivy Scan
+        uses: aquasecurity/trivy-action@0.30.0
+        with:
+          image-ref: ghcr.io/nickbonet/weekly_meal_planner_bot:latest
+          format: "table"
+          exit-code: "1"
+          severity: "HIGH,CRITICAL"
+          ignore-unfixed: true
+          vuln-type: "os,library"
+
+  discord_notification:
+    needs: [build]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send message to Discord webhook
+        uses: tsickert/discord-webhook@v6.0.0
+        with:
+          webhook-url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          content: ${{ needs.build.result == 'success' && 'Meal planner bot Docker image built successfully! :rocket:' || 'Meal planner bot Docker image build failed. :sos:' }}
