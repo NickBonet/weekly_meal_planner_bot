@@ -5,6 +5,10 @@ on:
   schedule:
     - cron: "45 0 * * 5" # Every Friday at 00:45 UTC
 
+permissions:
+  contents: read
+  packages: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
