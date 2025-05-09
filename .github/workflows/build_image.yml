@@ -3,7 +3,7 @@ name: Build Docker Image
 on:
   workflow_dispatch:
   schedule:
-    - cron: '45 0 * * 5'  # Every Friday at 00:45 UTC
+    - cron: "45 0 * * 5" # Every Friday at 00:45 UTC
 
 jobs:
   build:
@@ -30,4 +30,3 @@ jobs:
           context: .
           push: true
           tags: ghcr.io/nickbonet/weekly_meal_planner_bot:latest, ghcr.io/nickbonet/weekly_meal_planner_bot:${{ steps.latest_sha.outputs.sha }}
-      - uses: gautamkrishnar/keepalive-workflow@v2
