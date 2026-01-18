@@ -31,6 +31,9 @@ def parse_meal_data(meal_data, meal_date=None):
     if not meal_data:
         return "No meal data found!"
 
+    if meal_data and "detail" in meal_data and "Could not validate credentials" in meal_data["detail"]:
+        return f"<@&{os.environ.get('WEBHOOK_ROLE_ID')}>\n Error: Could not validate credentials for Mealie API. Please check your API token."
+
     # If meal_date is not provided, use the current date
     if meal_date is None:
         meal_date = datetime.datetime.now().strftime("%Y-%m-%d")
@@ -89,9 +92,13 @@ async def send_today_meal_plan_to_discord():
         )
 
         message = parse_meal_data(todays_meal, date_today)
-
-        await webhook.send(message, username="Meal Planner")
-    logging.info("Meal data for today sent to Discord!")
+        if "Error" in message:
+            await webhook.send(message, username="Meal Planner")
+            logging.error("Error fetching today's meal plan: %s", message)
+            return
+        else:
+            await webhook.send(message, username="Meal Planner")
+            logging.info("Meal data for today sent to Discord!")
 
 
 @aiocron.crontab("30 20 * * *", tz=pytz.timezone(os.environ["TZ"]))
@@ -106,9 +113,13 @@ async def send_tomorrows_meal_plan_to_discord():
         )
 
         message = parse_meal_data(tomorrow_meal, date_tomorrow)
-
-        await webhook.send(message, username="Meal Planner")
-    logging.info("Meal data for tomorrow sent to Discord!")
+        if "Error" in message:
+            await webhook.send(message, username="Meal Planner")
+            logging.error("Error fetching tomorrow's meal plan: %s", message)
+            return
+        else:
+            await webhook.send(message, username="Meal Planner")
+            logging.info("Meal data for tomorrow sent to Discord!")
 
 
 if __name__ == "__main__":
@@ -116,7 +127,6 @@ if __name__ == "__main__":
 
     loop = asyncio.get_event_loop()
     loop.create_task(initialize_webhook())
-
     # Run the event loop forever
     try:
         loop.run_forever()

@@ -38,7 +38,9 @@ def get_tomorrows_meal():
     headers["Authorization"] = "Bearer " + os.environ.get("MEALIE_API_TOKEN")
     resp = requests.get(url, headers=headers)
     # if resp contains items, return the items array
-    if resp.json()["items"]:
+    if resp.json() and "items" in resp.json():
         return resp.json()["items"]
+    elif resp.json() and "detail" in resp.json() and "Could not validate credentials" in resp.json()["detail"]:
+        return resp.json()
     else:
         return None
